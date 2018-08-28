@@ -89,3 +89,19 @@ registerBlockType('vermilion/post-selector', {
 
 ```
 
+
+### Props
+
+`posts : <Post>[]`
+
+posts should refer to an attribute in your block that is of type: 'array'. this is used internally by the component to update, re-order, and control deletion of posts from the selction.
+
+
+`onPostSelect : function => <Post>[]`
+
+
+onPostSelect runs when a user selects a new post from the suggestion list upon typing. It returns a new array of all selected posts and should replace the data in your posts attribute.
+
+`onChange: function => <Post>[]`
+
+onChange runs when the user reorders the array of posts or removes a post from the array. it returns a new array that should replace your posts attribute.
