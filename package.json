@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A Gutenberg component that allows you to attach posts and pages to a custom block",
   "main": "index.js",
+  "repository": "https: //github.com/vermiliondesign/gutenberg-post-selector.git",
   "keywords": [
     "gutenberg",
     "rest",
