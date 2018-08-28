@@ -1,0 +1,5 @@
+mode_modules
+.DS_Store
+.vscode
+.idea
+.cache

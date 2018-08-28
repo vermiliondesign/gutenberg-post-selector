@@ -1,0 +1,18 @@
+{
+  "name": "postselector",
+  "version": "1.0.0",
+  "description": "A Gutenberg component that allows you to attach posts and pages to a custom block",
+  "main": "index.js",
+  "keywords": [
+    "gutenberg",
+    "rest",
+    "wp",
+    "wordpress",
+    "posts",
+    "pages",
+    "search",
+    "addbysearch"
+  ],
+  "author": "Matt Dickey <mattdickey@vermilion.com>",
+  "license": "MIT"
+}
