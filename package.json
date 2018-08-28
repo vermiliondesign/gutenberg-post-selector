@@ -1,9 +1,15 @@
 {
-  "name": "postselector",
+  "name": "@vermilion/post-selector",
   "version": "1.0.0",
   "description": "A Gutenberg component that allows you to attach posts and pages to a custom block",
   "main": "index.js",
-  "repository": "https: //github.com/vermiliondesign/gutenberg-post-selector.git",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https: //github.com/vermiliondesign/gutenberg-post-selector.git"
+  },
   "keywords": [
     "gutenberg",
     "rest",
