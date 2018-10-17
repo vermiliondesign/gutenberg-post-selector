@@ -21,7 +21,7 @@ block.js
 import './style.scss';
 // import './editor.scss';
 
-import PostSelector from './PostSelector';
+import PostSelector from '@vermilion/post-selector';
 
 const { registerBlockType } = wp.blocks;
 const { Fragment, RawHTML } = wp.element;
