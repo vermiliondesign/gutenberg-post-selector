@@ -1,5 +1,7 @@
 # Gutenberg PostSelector
 
+REQUIRES Gutenberg v4.1 + 
+
 This is a React component built for Gutenberg that allows you to attach pages and posts like AddBySearch in the WP 5.0+ editor. 
 
 NOTE: Since this package does not stand on its own and requires the WordPress `{wp}` object to be available, there are no npm dependencies or task runners in this repo. When you include the file in your block, create-guten-block's runner should take care of the rest.
@@ -95,6 +97,14 @@ registerBlockType('vermilion/post-selector', {
 `posts : <Post>[]`
 
 posts should refer to an attribute in your block that is of type: 'array'. this is used internally by the component to update, re-order, and control deletion of posts from the selction.
+
+`postType : <String> (optional)`
+
+pass the singular name of a custom or built-in post type to limit results to that type (optional). 
+
+`data <String>[] (optional)`
+
+the data prop allows you to define an array of strings that map to object keys from the REST API. (does not support nesting right now).
 
 
 `onPostSelect : function => <Post>[]`
