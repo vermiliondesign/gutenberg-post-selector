@@ -1,10 +1,8 @@
 # Gutenberg PostSelector
 
-REQUIRES Gutenberg v4.1 + 
+REQUIRES WordPress 5.0+
 
 This is a React component built for Gutenberg that allows you to attach pages and posts like AddBySearch in the WP 5.0+ editor. 
-
-NOTE: Since this package does not stand on its own and requires the WordPress `{wp}` object to be available, there are no npm dependencies or task runners in this repo. When you include the file in your block, create-guten-block's runner should take care of the rest.
 
 
 ## Installation
