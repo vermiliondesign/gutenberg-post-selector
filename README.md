@@ -57,6 +57,7 @@ registerBlockType('vermilion/post-selector', {
               onChange={newValue => {
                 setAttributes({ posts: [...newValue] });
               }}
+              postType={'page'}
             />
 
           </PanelBody>

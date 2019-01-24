@@ -19,6 +19,16 @@ function debounce(func, wait = 100) {
 }
 
 class PostSelector extends Component {
+  /**
+   * ===== Available Props =======
+   *
+   * posts <Array> of Post Objects, must include ID and title.
+   * data <Array> array of post properties to return (top level only right now)
+   * postType = <String> singular name of post type to restrict results to.
+   * onPostSelect <Function> callback for when a new post is selected.
+   * onChange <Function> callback for when posts are deleted or rearranged.
+   *
+   */
   constructor() {
     super(...arguments);
 
@@ -73,10 +83,11 @@ class PostSelector extends Component {
     });
 
     const request = apiFetch({
-      path: addQueryArgs('/gutenberg/v1/search', {
+      path: addQueryArgs('/wp/v2/search', {
         search: value,
         per_page: 20,
-        type: 'post'
+        type: 'post',
+        subtype: this.props.postType ? this.props.postType : undefined
       })
     });
 
@@ -150,18 +161,44 @@ class PostSelector extends Component {
 
   selectLink(post) {
     // get the "full" post data if a post was selected. this may be something to add as a prop in the future for custom use cases.
+    if (this.props.data) {
+      // if data already exists in the post object, there's no need to make an API call.
+      let reachOutToApi = false;
+      const returnData = {};
+      for (const prop of this.props.data) {
+        if (!post.hasOwnProperty(prop)) {
+          reachOutToApi = true;
+          return;
+        }
+        returnData[prop] = post[prop];
+      }
+
+      if (!reachOutToApi) {
+        this.props.onPostSelect(returnData);
+        this.setState({
+          input: '',
+          selectedSuggestion: null,
+          showSuggestions: false
+        });
+        return;
+      }
+    }
     apiFetch({
       path: `/wp/v2/${post.subtype}s/${post.id}`
     }).then(response => {
+      // console.log( response );
       const fullpost = {
         title: decodeEntities(response.title.rendered),
         id: response.id,
         excerpt: decodeEntities(response.excerpt.rendered),
-        url: response.link
+        url: response.link,
+        date: response.human_date
+
       };
       // send data to the block;
       this.props.onPostSelect(fullpost);
     });
+
     this.setState({
       input: '',
       selectedSuggestion: null,
@@ -174,7 +211,7 @@ class PostSelector extends Component {
     return (
       <ul>
         {this.props.posts.map((post, i) => (
-          <li style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'nowrap' }}>
+          <li style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'nowrap' }} key={post.id}>
             <span style={{ maxWidth: '60%' }}>{post.title}</span>
             <span>
               {i !== 0 ? (
@@ -218,6 +255,60 @@ class PostSelector extends Component {
     );
   }
 
+  // started making this function, decided it would just be easier to do this in PHP, so this is not used.
+  refreshMeta = () => {
+    // get possible post types
+    // const _posts = this.props.posts;
+    // console.log( this );
+    // apiFetch( {
+    // 	path: '/wp/v2/types',
+    // } )
+    // 	.then( response => {
+    // 	// create array of rest_base endpoints for each "real" post type.
+    // 	const postTypes = [];
+    // 		for ( const key in response ) {
+    // 			switch ( key ) {
+    // 				case 'attachment': // not real
+    // 				case 'wp_block': // no real
+    // 					break;
+    // 				default:
+    // 					if ( response.hasOwnProperty( key ) ) {
+    // 						postTypes.push( response[ key ].rest_base );
+    // 					}
+    // 					break;
+    // 			}
+    // 		}
+    // 		return postTypes;
+    // 	} )
+    // 	.then( postTypes => {
+    // 		console.log( 'received post types' );
+    // 		const _postTypes = postTypes;
+    // 		console.log( _posts );
+    // 		console.log( _postTypes );
+    // 		_posts.map( ( post, i ) => {
+    // 			_postTypes.map( type => {
+    // 				console.log( `trying to hit API for: ${ type }->${ post.id }` );
+    // 				apiFetch( { path: `/wp/v2/${ type }/${ post.id }` } )
+    // 					.then( response => {
+    // 						//relevant post data.
+    // 						const fullpost = {
+    // 							title: decodeEntities( response.title.rendered ),
+    // 							id: response.id,
+    // 							excerpt: decodeEntities( response.excerpt.rendered ),
+    // 							url: response.link,
+    // 							date: response.human_date,
+    // 						};
+
+    // 						this.props[ i ] = fullpost;
+    // 					} )
+    // 					.catch( error => {
+    // 						throw new Error( error.message );
+    // 					} );
+    // 			} );
+    // 	} );
+    // 	} );
+  }
+
   render() {
     const { autoFocus = true, instanceId } = this.props;
     const { showSuggestions, posts, selectedSuggestion, loading, input } = this.state;
@@ -226,11 +317,10 @@ class PostSelector extends Component {
       <Fragment>
         {this.renderSelectedPosts()}
         <div className="editor-url-input">
-          <input autoFocus={autoFocus} type="text" aria-label={'URL'} required value={input} onChange={this.onChange} onInput={stopEventPropagation} placeholder={'Type page or post name'} onKeyDown={this.onKeyDown} role="combobox" aria-expanded={showSuggestions} aria-autocomplete="list" aria-owns={`editor-url-input-suggestions-${instanceId}`} aria-activedescendant={selectedSuggestion !== null ? `editor-url-input-suggestion-${instanceId}-${selectedSuggestion}` : undefined} />
+          <input autoFocus={autoFocus} type="text" aria-label={'URL'} required value={input} onChange={this.onChange} onInput={stopEventPropagation} placeholder={'Type page or post name'} onKeyDown={this.onKeyDown} role="combobox" aria-expanded={showSuggestions} aria-autocomplete="list" aria-owns={`editor-url-input-suggestions-${instanceId}`} aria-activedescendant={selectedSuggestion !== null ? `editor-url-input-suggestion-${instanceId}-${selectedSuggestion}` : undefined} style={{ width: '100%' }} />
 
           {loading && <Spinner />}
         </div>
-
         {showSuggestions &&
           !!posts.length && (
             <Popover position="bottom" noArrow focusOnMount={false}>

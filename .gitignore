@@ -1,4 +1,4 @@
-mode_modules
+node_modules
 .DS_Store
 .vscode
 .idea
