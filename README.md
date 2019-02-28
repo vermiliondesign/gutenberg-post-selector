@@ -13,7 +13,7 @@ cd to your custom block plugin directory.
 ## Usage
 
 block.js
-```
+```javascript
 /**
  * BLOCK: Block Name
  */
