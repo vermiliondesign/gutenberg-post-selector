@@ -8,6 +8,15 @@ const { addQueryArgs } = wp.url;
 
 const stopEventPropagation = event => event.stopPropagation();
 
+
+const subtypeStyle = {
+  border: '3px solid lightgrey',
+  padding: '5px',
+  borderRadius: '7px',
+  marginRight: '10px',
+  fontSize: '80%'
+}
+
 function debounce(func, wait = 100) {
   let timeout;
   return function (...args) {
@@ -192,8 +201,9 @@ class PostSelector extends Component {
         id: response.id,
         excerpt: decodeEntities(response.excerpt.rendered),
         url: response.link,
-        date: response.human_date
-
+        date: response.date,
+        type: response.type,
+        status: response.status
       };
       // send data to the block;
       this.props.onPostSelect(fullpost);
@@ -211,8 +221,9 @@ class PostSelector extends Component {
     return (
       <ul>
         {this.props.posts.map((post, i) => (
-          <li style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'nowrap' }} key={post.id}>
-            <span style={{ maxWidth: '60%' }}>{post.title}</span>
+          <li style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', flexWrap: 'nowrap' }} key={post.id}>
+            <span style={subtypeStyle}>{post.type}</span>
+            <span style={{ flex: 1 }}>{post.title}</span>
             <span>
               {i !== 0 ? (
                 <IconButton
@@ -312,6 +323,7 @@ class PostSelector extends Component {
   render() {
     const { autoFocus = true, instanceId } = this.props;
     const { showSuggestions, posts, selectedSuggestion, loading, input } = this.state;
+    
     /* eslint-disable jsx-a11y/no-autofocus */
     return (
       <Fragment>
@@ -326,8 +338,21 @@ class PostSelector extends Component {
             <Popover position="bottom" noArrow focusOnMount={false}>
               <div className="editor-url-input__suggestions" id={`editor-url-input-suggestions-${instanceId}`} ref={this.bindListNode} role="listbox">
                 {posts.map((post, index) => (
-                  <button key={post.id} role="option" tabIndex="-1" id={`editor-url-input-suggestion-${instanceId}-${index}`} ref={this.bindSuggestionNode(index)} className={`editor-url-input__suggestion ${index === selectedSuggestion ? 'is-selected' : ''}`} onClick={() => this.selectLink(post)} aria-selected={index === selectedSuggestion}>
-                    {decodeEntities(post.title) || '(no title)'}
+                  <button 
+                    key={post.id} 
+                    role="option" 
+                    tabIndex="-1" 
+                    id={`editor-url-input-suggestion-${instanceId}-${index}`} 
+                    ref={this.bindSuggestionNode(index)} 
+                    className={`editor-url-input__suggestion ${index === selectedSuggestion ? 'is-selected' : ''}`} 
+                    onClick={() => this.selectLink(post)} 
+                    aria-selected={index === selectedSuggestion}
+                  >
+                    <div style={{display: 'flex', alignItems: 'center'}}>
+                      <div style={subtypeStyle}>{post.subtype}</div>
+                      <div>{decodeEntities(post.title) || '(no title)'}</div>
+                    </div>
+
                   </button>
                 ))}
               </div>
