@@ -3,11 +3,11 @@ const { decodeEntities } = wp.htmlEntities;
 const { UP, DOWN, ENTER } = wp.keycodes;
 const { Spinner, Popover, IconButton } = wp.components;
 const { withInstanceId } = wp.compose;
+const { withSelect } = wp.data;
 const { apiFetch } = wp;
 const { addQueryArgs } = wp.url;
 
 const stopEventPropagation = event => event.stopPropagation();
-
 
 const subtypeStyle = {
   border: '3px solid lightgrey',
@@ -47,6 +47,8 @@ class PostSelector extends Component {
     this.updateSuggestions = debounce(this.updateSuggestions.bind(this), 200);
 
     this.suggestionNodes = [];
+
+    this.postTypes = null;
 
     this.state = {
       posts: [],
@@ -192,8 +194,12 @@ class PostSelector extends Component {
         return;
       }
     }
+
+    // get the base of the URL for the post API request
+    let restBase = this.getPostTypeData(post.subtype).restBase;
+
     apiFetch({
-      path: `/wp/v2/${post.subtype}s/${post.id}`
+      path: `/wp/v2/${restBase}/${post.id}`
     }).then(response => {
       // console.log( response );
       const fullpost = {
@@ -222,7 +228,12 @@ class PostSelector extends Component {
       <ul>
         {this.props.posts.map((post, i) => (
           <li style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', flexWrap: 'nowrap' }} key={post.id}>
-            <span style={subtypeStyle}>{post.type}</span>
+
+            { 
+              /* render the post type if we have the data to support it */
+              this.hasPostTypeData() && <span style={subtypeStyle}>{this.getPostTypeData(post.type).displayName}</span> 
+            }
+
             <span style={{ flex: 1 }}>{post.title}</span>
             <span>
               {i !== 0 ? (
@@ -320,17 +331,70 @@ class PostSelector extends Component {
     // 	} );
   }
 
+  resolvePostTypes(sourcePostTypes) {
+    
+    // check if the post types have already been resolved
+    if (this.postTypes !== null) { 
+      return; 
+    }
+
+    // check if we have the source post types from the API
+    if (!sourcePostTypes){
+      return;
+    }
+
+    // transform the source post types from the API
+    // into the data we need and put it in a map
+    var arr = sourcePostTypes.map((p) => {
+      return [p.slug, {
+        slug: p.slug,
+        displayName: p.labels.singular_name,
+        restBase: p.rest_base
+      }]
+    })
+
+    this.postTypes = new Map(arr);
+
+  }
+
+  // get the post type data
+  getPostTypeData(slug){
+    if(!this.hasPostTypeData()) { return {} }
+    return this.postTypes.get(slug);
+  }
+
+  hasPostTypeData(){
+    return this.postTypes !== null;
+  }
+
   render() {
-    const { autoFocus = true, instanceId } = this.props;
+    const { autoFocus = true, instanceId, sourcePostTypes } = this.props;
     const { showSuggestions, posts, selectedSuggestion, loading, input } = this.state;
     
+    this.resolvePostTypes(sourcePostTypes);
+
     /* eslint-disable jsx-a11y/no-autofocus */
     return (
       <Fragment>
         {this.renderSelectedPosts()}
         <div className="editor-url-input">
-          <input autoFocus={autoFocus} type="text" aria-label={'URL'} required value={input} onChange={this.onChange} onInput={stopEventPropagation} placeholder={'Type page or post name'} onKeyDown={this.onKeyDown} role="combobox" aria-expanded={showSuggestions} aria-autocomplete="list" aria-owns={`editor-url-input-suggestions-${instanceId}`} aria-activedescendant={selectedSuggestion !== null ? `editor-url-input-suggestion-${instanceId}-${selectedSuggestion}` : undefined} style={{ width: '100%' }} />
-
+          <input 
+            autoFocus={autoFocus} 
+            type="text" 
+            aria-label={'URL'}
+            required 
+            value={input} 
+            onChange={this.onChange} 
+            onInput={stopEventPropagation} 
+            placeholder={'Type page or post name'} 
+            onKeyDown={this.onKeyDown} 
+            role="combobox" 
+            aria-expanded={showSuggestions} 
+            aria-autocomplete="list" 
+            aria-owns={`editor-url-input-suggestions-${instanceId}`} 
+            aria-activedescendant={selectedSuggestion !== null ? `editor-url-input-suggestion-${instanceId}-${selectedSuggestion}` : undefined} 
+            style={{ width: '100%' }} 
+        />
           {loading && <Spinner />}
         </div>
         {showSuggestions &&
@@ -349,7 +413,12 @@ class PostSelector extends Component {
                     aria-selected={index === selectedSuggestion}
                   >
                     <div style={{display: 'flex', alignItems: 'center'}}>
-                      <div style={subtypeStyle}>{post.subtype}</div>
+
+                      { 
+                        /* render the post type if we have the data to support it */
+                        this.hasPostTypeData() && <div style={subtypeStyle}>{this.getPostTypeData(post.subtype).displayName}</div>
+                      }
+                      
                       <div>{decodeEntities(post.title) || '(no title)'}</div>
                     </div>
 
@@ -364,4 +433,11 @@ class PostSelector extends Component {
   }
 }
 
-export default withInstanceId(PostSelector);
+export default withSelect((select) => {
+    const { getPostTypes } = select('core');
+
+    return {
+        sourcePostTypes: getPostTypes(),
+    }
+
+})(withInstanceId(PostSelector));
