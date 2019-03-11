@@ -13,13 +13,12 @@ cd to your custom block plugin directory.
 ## Usage
 
 block.js
-```
+```javascript
 /**
  * BLOCK: Block Name
  */
 //  Import CSS.
 import './style.scss';
-// import './editor.scss';
 
 import PostSelector from '@vermilion/post-selector';
 
@@ -30,7 +29,6 @@ const { PanelBody } = wp.components;
 
 registerBlockType('vermilion/post-selector', {
   title: 'Post Selector',
-  // icon: '',
   category: 'widgets',
   keywords: [''],
   attributes: {
@@ -56,6 +54,7 @@ registerBlockType('vermilion/post-selector', {
                 setAttributes({ posts: [...newValue] });
               }}
               postType={'page'}
+              limit="3"
             />
 
           </PanelBody>
@@ -114,3 +113,7 @@ onPostSelect runs when a user selects a new post from the suggestion list upon t
 `onChange: function => <Post>[]`
 
 onChange runs when the user reorders the array of posts or removes a post from the array. it returns a new array that should replace your posts attribute.
+
+`limit: <Number> (optional)`
+
+Limit the number of posts a user is allowed to select.

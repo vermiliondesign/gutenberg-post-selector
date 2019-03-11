@@ -36,15 +36,16 @@ class PostSelector extends Component {
    * postType = <String> singular name of post type to restrict results to.
    * onPostSelect <Function> callback for when a new post is selected.
    * onChange <Function> callback for when posts are deleted or rearranged.
+   * limit <Number> limit selection to posts to X number of posts.
    *
    */
   constructor() {
     super(...arguments);
-
     this.onChange = this.onChange.bind(this);
     this.onKeyDown = this.onKeyDown.bind(this);
     this.bindListNode = this.bindListNode.bind(this);
     this.updateSuggestions = debounce(this.updateSuggestions.bind(this), 200);
+    this.limit = this.props.limit ? parseInt(this.props.limit) : false;
 
     this.suggestionNodes = [];
 
@@ -196,7 +197,7 @@ class PostSelector extends Component {
     }
 
     // get the base of the URL for the post API request
-    let restBase = this.getPostTypeData(post.subtype).restBase;
+    const restBase = this.getPostTypeData(post.subtype).restBase;
 
     apiFetch({
       path: `/wp/v2/${restBase}/${post.id}`
@@ -229,9 +230,9 @@ class PostSelector extends Component {
         {this.props.posts.map((post, i) => (
           <li style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', flexWrap: 'nowrap' }} key={post.id}>
 
-            { 
+            {
               /* render the post type if we have the data to support it */
-              this.hasPostTypeData() && <span style={subtypeStyle}>{this.getPostTypeData(post.type).displayName}</span> 
+              this.hasPostTypeData() && <span style={subtypeStyle}>{this.getPostTypeData(post.type).displayName}</span>
             }
 
             <span style={{ flex: 1 }}>{post.title}</span>
@@ -276,76 +277,20 @@ class PostSelector extends Component {
       </ul>
     );
   }
-
-  // started making this function, decided it would just be easier to do this in PHP, so this is not used.
-  refreshMeta = () => {
-    // get possible post types
-    // const _posts = this.props.posts;
-    // console.log( this );
-    // apiFetch( {
-    // 	path: '/wp/v2/types',
-    // } )
-    // 	.then( response => {
-    // 	// create array of rest_base endpoints for each "real" post type.
-    // 	const postTypes = [];
-    // 		for ( const key in response ) {
-    // 			switch ( key ) {
-    // 				case 'attachment': // not real
-    // 				case 'wp_block': // no real
-    // 					break;
-    // 				default:
-    // 					if ( response.hasOwnProperty( key ) ) {
-    // 						postTypes.push( response[ key ].rest_base );
-    // 					}
-    // 					break;
-    // 			}
-    // 		}
-    // 		return postTypes;
-    // 	} )
-    // 	.then( postTypes => {
-    // 		console.log( 'received post types' );
-    // 		const _postTypes = postTypes;
-    // 		console.log( _posts );
-    // 		console.log( _postTypes );
-    // 		_posts.map( ( post, i ) => {
-    // 			_postTypes.map( type => {
-    // 				console.log( `trying to hit API for: ${ type }->${ post.id }` );
-    // 				apiFetch( { path: `/wp/v2/${ type }/${ post.id }` } )
-    // 					.then( response => {
-    // 						//relevant post data.
-    // 						const fullpost = {
-    // 							title: decodeEntities( response.title.rendered ),
-    // 							id: response.id,
-    // 							excerpt: decodeEntities( response.excerpt.rendered ),
-    // 							url: response.link,
-    // 							date: response.human_date,
-    // 						};
-
-    // 						this.props[ i ] = fullpost;
-    // 					} )
-    // 					.catch( error => {
-    // 						throw new Error( error.message );
-    // 					} );
-    // 			} );
-    // 	} );
-    // 	} );
-  }
-
   resolvePostTypes(sourcePostTypes) {
-    
     // check if the post types have already been resolved
-    if (this.postTypes !== null) { 
-      return; 
+    if (this.postTypes !== null) {
+      return;
     }
 
     // check if we have the source post types from the API
-    if (!sourcePostTypes){
+    if (!sourcePostTypes) {
       return;
     }
 
     // transform the source post types from the API
     // into the data we need and put it in a map
-    var arr = sourcePostTypes.map((p) => {
+    const arr = sourcePostTypes.map((p) => {
       return [p.slug, {
         slug: p.slug,
         displayName: p.labels.singular_name,
@@ -354,47 +299,46 @@ class PostSelector extends Component {
     })
 
     this.postTypes = new Map(arr);
-
   }
 
   // get the post type data
-  getPostTypeData(slug){
-    if(!this.hasPostTypeData()) { return {} }
+  getPostTypeData(slug) {
+    if (!this.hasPostTypeData()) { return {} }
     return this.postTypes.get(slug);
   }
 
-  hasPostTypeData(){
+  hasPostTypeData() {
     return this.postTypes !== null;
   }
 
   render() {
-    const { autoFocus = true, instanceId, sourcePostTypes } = this.props;
-    const { showSuggestions, posts, selectedSuggestion, loading, input } = this.state;
-    
     this.resolvePostTypes(sourcePostTypes);
-
+    const { autoFocus = true, instanceId, limit } = this.props;
+    const { showSuggestions, posts, selectedSuggestion, loading, input } = this.state;
+    const inputDisabled = !!limit && this.props.posts.length >= limit;
     /* eslint-disable jsx-a11y/no-autofocus */
     return (
       <Fragment>
         {this.renderSelectedPosts()}
         <div className="editor-url-input">
-          <input 
-            autoFocus={autoFocus} 
-            type="text" 
+          <input
+            autoFocus={autoFocus}
+            type="text"
             aria-label={'URL'}
-            required 
-            value={input} 
-            onChange={this.onChange} 
-            onInput={stopEventPropagation} 
-            placeholder={'Type page or post name'} 
-            onKeyDown={this.onKeyDown} 
-            role="combobox" 
-            aria-expanded={showSuggestions} 
-            aria-autocomplete="list" 
-            aria-owns={`editor-url-input-suggestions-${instanceId}`} 
-            aria-activedescendant={selectedSuggestion !== null ? `editor-url-input-suggestion-${instanceId}-${selectedSuggestion}` : undefined} 
-            style={{ width: '100%' }} 
-        />
+            required
+            value={input}
+            onChange={this.onChange}
+            onInput={stopEventPropagation}
+            placeholder={inputDisabled ? `Limted to ${limit} posts` : 'Type page or post name'}
+            onKeyDown={this.onKeyDown}
+            role="combobox"
+            aria-expanded={showSuggestions}
+            aria-autocomplete="list"
+            aria-owns={`editor-url-input-suggestions-${instanceId}`}
+            aria-activedescendant={selectedSuggestion !== null ? `editor-url-input-suggestion-${instanceId}-${selectedSuggestion}` : undefined}
+            style={{ width: '100%' }}
+            disabled={inputDisabled}
+          />
           {loading && <Spinner />}
         </div>
         {showSuggestions &&
@@ -402,23 +346,23 @@ class PostSelector extends Component {
             <Popover position="bottom" noArrow focusOnMount={false}>
               <div className="editor-url-input__suggestions" id={`editor-url-input-suggestions-${instanceId}`} ref={this.bindListNode} role="listbox">
                 {posts.map((post, index) => (
-                  <button 
-                    key={post.id} 
-                    role="option" 
-                    tabIndex="-1" 
-                    id={`editor-url-input-suggestion-${instanceId}-${index}`} 
-                    ref={this.bindSuggestionNode(index)} 
-                    className={`editor-url-input__suggestion ${index === selectedSuggestion ? 'is-selected' : ''}`} 
-                    onClick={() => this.selectLink(post)} 
+                  <button
+                    key={post.id}
+                    role="option"
+                    tabIndex="-1"
+                    id={`editor-url-input-suggestion-${instanceId}-${index}`}
+                    ref={this.bindSuggestionNode(index)}
+                    className={`editor-url-input__suggestion ${index === selectedSuggestion ? 'is-selected' : ''}`}
+                    onClick={() => this.selectLink(post)}
                     aria-selected={index === selectedSuggestion}
                   >
-                    <div style={{display: 'flex', alignItems: 'center'}}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
 
-                      { 
+                      {
                         /* render the post type if we have the data to support it */
                         this.hasPostTypeData() && <div style={subtypeStyle}>{this.getPostTypeData(post.subtype).displayName}</div>
                       }
-                      
+
                       <div>{decodeEntities(post.title) || '(no title)'}</div>
                     </div>
 
@@ -434,10 +378,8 @@ class PostSelector extends Component {
 }
 
 export default withSelect((select) => {
-    const { getPostTypes } = select('core');
-
-    return {
-        sourcePostTypes: getPostTypes(),
-    }
-
+  const { getPostTypes } = select('core');
+  return {
+    sourcePostTypes: getPostTypes()
+  }
 })(withInstanceId(PostSelector));
