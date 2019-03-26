@@ -312,10 +312,12 @@ class PostSelector extends Component {
   }
 
   render() {
-    this.resolvePostTypes(sourcePostTypes);
-    const { autoFocus = true, instanceId, limit } = this.props;
+    const { autoFocus = true, instanceId, limit, sourcePostTypes } = this.props;
     const { showSuggestions, posts, selectedSuggestion, loading, input } = this.state;
     const inputDisabled = !!limit && this.props.posts.length >= limit;
+
+    this.resolvePostTypes(sourcePostTypes);
+
     /* eslint-disable jsx-a11y/no-autofocus */
     return (
       <Fragment>
