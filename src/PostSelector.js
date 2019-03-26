@@ -202,11 +202,11 @@ class PostSelector extends Component {
     apiFetch({
       path: `/wp/v2/${restBase}/${post.id}`
     }).then(response => {
-      // console.log( response );
+      const excerpt = response.excerpt ? response.excerpt.rendered : '';
       const fullpost = {
         title: decodeEntities(response.title.rendered),
         id: response.id,
-        excerpt: decodeEntities(response.excerpt.rendered),
+        excerpt: decodeEntities(excerpt),
         url: response.link,
         date: response.date,
         type: response.type,
