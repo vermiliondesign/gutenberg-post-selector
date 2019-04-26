@@ -284,7 +284,7 @@ class PostSelector extends Component {
     }
 
     // check if we have the source post types from the API
-    if (!sourcePostTypes) {
+    if (sourcePostTypes == null) {
       return;
     }
 
@@ -312,7 +312,7 @@ class PostSelector extends Component {
   }
 
   render() {
-    this.resolvePostTypes(sourcePostTypes);
+    this.resolvePostTypes(this.props.sourcePostTypes);
     const { autoFocus = true, instanceId, limit } = this.props;
     const { showSuggestions, posts, selectedSuggestion, loading, input } = this.state;
     const inputDisabled = !!limit && this.props.posts.length >= limit;
@@ -320,7 +320,7 @@ class PostSelector extends Component {
     return (
       <Fragment>
         {this.renderSelectedPosts()}
-        <div className="editor-url-input">
+        <div className="block-editor-url-input">
           <input
             autoFocus={autoFocus}
             type="text"
@@ -334,8 +334,8 @@ class PostSelector extends Component {
             role="combobox"
             aria-expanded={showSuggestions}
             aria-autocomplete="list"
-            aria-owns={`editor-url-input-suggestions-${instanceId}`}
-            aria-activedescendant={selectedSuggestion !== null ? `editor-url-input-suggestion-${instanceId}-${selectedSuggestion}` : undefined}
+            aria-owns={`block-editor-url-input-suggestions-${instanceId}`}
+            aria-activedescendant={selectedSuggestion !== null ? `block-editor-url-input-suggestion-${instanceId}-${selectedSuggestion}` : undefined}
             style={{ width: '100%' }}
             disabled={inputDisabled}
           />
@@ -344,15 +344,15 @@ class PostSelector extends Component {
         {showSuggestions &&
           !!posts.length && (
             <Popover position="bottom" noArrow focusOnMount={false}>
-              <div className="editor-url-input__suggestions" id={`editor-url-input-suggestions-${instanceId}`} ref={this.bindListNode} role="listbox">
+              <div className="block-editor-url-input__suggestions" id={`block-editor-url-input-suggestions-${instanceId}`} ref={this.bindListNode} role="listbox">
                 {posts.map((post, index) => (
                   <button
                     key={post.id}
                     role="option"
                     tabIndex="-1"
-                    id={`editor-url-input-suggestion-${instanceId}-${index}`}
+                    id={`block-editor-url-input-suggestion-${instanceId}-${index}`}
                     ref={this.bindSuggestionNode(index)}
-                    className={`editor-url-input__suggestion ${index === selectedSuggestion ? 'is-selected' : ''}`}
+                    className={`block-editor-url-input__suggestion ${index === selectedSuggestion ? 'is-selected' : ''}`}
                     onClick={() => this.selectLink(post)}
                     aria-selected={index === selectedSuggestion}
                   >
