@@ -46,8 +46,8 @@ registerBlockType('vermilion/post-selector', {
           
             <PostSelector
               onPostSelect={post => {
-                attributes.posts.push(post);
-                setAttributes({ posts: [...attributes.posts] });
+                const updatedPosts = [...attributes.posts, post];
+                setAttributes({ posts: updatedPosts });
               }}
               posts={attributes.posts}
               onChange={newValue => {
