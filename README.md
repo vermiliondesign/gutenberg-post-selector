@@ -1,3 +1,6 @@
+## \*\*\*\*_This repo is no longer being maintained_\*\*\*\*
+_Vermilion Design has shifted the way that we develop for Gutenberg which means that this repo will no longer be relevant for our workflow. Additionally, there is a fundamental flaw with getting posts the way that this component does it. Data will not change when the source posts are updated. In order to circumvent this, you should use Server Side Rendering views, which are much easier to write and maintain. However, if you would like to still use this component, you should check out one of the forks._
+
 # Gutenberg PostSelector
 
 REQUIRES WordPress 5.0+
